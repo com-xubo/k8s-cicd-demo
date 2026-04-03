@@ -36,6 +36,14 @@ jobs:
         env:
           KUBECONFIG: /home/runner/.kube/config
         run: |
+          # 第一次部署时创建资源，后续只更新镜像
+          kubectl apply -f deployment.yaml
+          kubectl apply -f service.yaml
+
+          # 更新镜像（使用最新 commit sha）
           kubectl set image deployment/myapp myapp=${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }}
-          kubectl rollout status deployment/myapp --timeout=90s
-          echo "✅ Deployment updated successfully!"
+
+          # 等待部署完成
+          kubectl rollout status deployment/myapp --timeout=120s
+
+          echo "✅ Deployment updated successfully! (Image: ${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }})"
