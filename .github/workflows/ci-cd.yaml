@@ -27,15 +27,15 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: self-hosted          # ← 关键：在你的 VM 上运行
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Update image in Deployment
+      - name: Deploy to K3s
+        env:
+          KUBECONFIG: /home/runner/.kube/config
         run: |
           kubectl set image deployment/myapp myapp=${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }}
-          kubectl rollout status deployment/myapp --timeout=60s
-
-      - name: Apply Service (if not exists)
-        run: kubectl apply -f service.yaml
+          kubectl rollout status deployment/myapp --timeout=90s
+          echo "✅ Deployment updated successfully!"
